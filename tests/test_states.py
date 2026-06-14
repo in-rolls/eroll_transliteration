@@ -11,8 +11,18 @@ class TestStates(unittest.TestCase):
     def test_registry_membership(self):
         self.assertIn("assam", STATES)
         self.assertIn("punjab", STATES)
+        self.assertIn("west_bengal", STATES)
         # Andhra is intentionally excluded (already-romanized English).
         self.assertNotIn("andhra", STATES)
+
+    def test_west_bengal_shares_bengali_corpus(self):
+        wb = STATES["west_bengal"]
+        self.assertEqual(wb.input_glob, "wb_all.csv.gz")
+        self.assertEqual(wb.language, "bengali")
+        # Same Bengali corpus as assam -- west_bengal appends net-new pairs to it.
+        self.assertEqual(wb.corpus_csv.name, "bengali.csv.gz")
+        self.assertEqual(wb.corpus_csv, STATES["assam"].corpus_csv)
+        self.assertEqual(wb.columns, NAME_PLACE_COLUMNS)
 
     def test_columns_default_order(self):
         # Order must match indicate's extract_punjabi SOURCE_FIELDS for byte-exact reproduction.
@@ -36,7 +46,8 @@ class TestStates(unittest.TestCase):
         with mock.patch.dict(os.environ, {"EROLL_DATA_DIR": "/tmp/rolls"}):
             self.assertEqual(str(data_dir()), "/tmp/rolls")
             assam = STATES["assam"]
-            self.assertEqual(assam.corpus_csv.name, "assamese.csv.gz")
+            # Assam rolls are Bengali script -> the corpus is the shared bengali.csv.gz.
+            self.assertEqual(assam.corpus_csv.name, "bengali.csv.gz")
             self.assertEqual(assam.parallel_parquet.name, "assam_parallel.parquet")
             # Punjab uses the original notebook's parquet/corpus names + suffix.
             punjab = STATES["punjab"]

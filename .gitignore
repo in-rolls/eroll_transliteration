@@ -27,3 +27,4 @@ coverage.xml
 !/data/*.csv.gz
 /data/*_all_clean*.csv.gz
 /data/*_train_v2.csv.gz
+.DS_Store

@@ -22,6 +22,10 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5": (0.50, 2.50),
     "claude-sonnet-4-6": (1.50, 7.50),
     "claude-opus-4-8": (2.50, 12.50),
+    # Gemini Batch API = 50% off standard. Keys match the litellm `gemini/...` model id.
+    # gemini-2.5-flash standard $0.30/$2.50 -> batch $0.15/$1.25. VERIFY before relying.
+    "gemini/gemini-2.5-flash": (0.15, 1.25),
+    "gemini/gemini-2.5-flash-lite": (0.05, 0.20),
 }
 
 

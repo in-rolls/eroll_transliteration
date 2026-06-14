@@ -55,6 +55,7 @@ indicate = { path = "../indicate", editable = true }
 
 [tool.uv.build-backend]
 module-root = ""
+module-name = "eroll"
 source-exclude = [
     "/.github",
     "/.venv",

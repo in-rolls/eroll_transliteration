@@ -13,6 +13,7 @@ via a checkpoint, so ``run`` can be re-invoked to resume an in-flight batch.
 
 from __future__ import annotations
 
+import json
 import math
 import random
 import subprocess
@@ -24,7 +25,11 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from .extract_pairs import extract_pairs
+from .extract_pairs import (
+    extract_pairs,
+    load_corpus_native_keys,
+    merge_word_map_into_corpus,
+)
 from .pipeline import extract_unique_native_tokens, join_back
 from .pricing import MODEL_PRICING, estimate_cost
 from .states import STATES, StateConfig, data_dir
@@ -186,7 +191,9 @@ def sample(ctx, sample_n, limit):
     token_list = sorted(tokens)
     rng = random.Random(42)
     chosen = rng.sample(token_list, min(sample_n, len(token_list)))
-    click.echo(f"[{cfg.name}] sampling {len(chosen)} of {len(token_list):,} unique tokens")
+    click.echo(
+        f"[{cfg.name}] sampling {len(chosen)} of {len(token_list):,} unique tokens"
+    )
 
     ckpt = data_dir() / "eval" / f"{cfg.name}_sample.jsonl"
     word_map = transliterate_tokens_batched(
@@ -248,6 +255,96 @@ def run(ctx, limit):
     finally:
         writer.close()
     click.echo("  done.")
+
+
+def _read_checkpoint_map(checkpoint_path) -> dict[str, str]:
+    """Load a resolved ``token -> english`` map from indicate's JSONL checkpoint."""
+    word_map: dict[str, str] = {}
+    if not checkpoint_path.exists():
+        return word_map
+    with open(checkpoint_path, encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if line:
+                record = json.loads(line)
+                word_map[record["token"]] = record["translit"]
+    return word_map
+
+
+@cli.command()
+@click.option("--limit", default=None, type=int, help="Cap rows scanned (testing).")
+@click.pass_context
+def harvest(ctx, limit):
+    """Transliterate only net-new native tokens (batch) and append pairs to the corpus.
+
+    Unlike ``run``, this never builds the parallel parquet: it collects unique tokens,
+    drops those already in the corpus, transliterates just the remainder via Gemini/LLM
+    batch (so you pay only for net-new), then appends the new ``(native, english)`` pairs.
+    """
+    from indicate.batch import transliterate_tokens_batched
+
+    cfg: StateConfig = ctx.obj["cfg"]
+    cols = available_columns(cfg)
+
+    click.echo(f"[{cfg.name}] pass 1/1: collecting unique native tokens ...")
+    tokens = extract_unique_native_tokens(
+        iter_chunks(cfg, cols, limit=limit), cols, cfg.native_run
+    )
+    existing = load_corpus_native_keys(cfg.corpus_csv)
+    net_new = sorted(tokens - existing)
+    click.echo(
+        f"  {len(tokens):,} unique, {len(existing):,} already in corpus -> "
+        f"{len(net_new):,} net-new"
+    )
+    if not net_new:
+        click.echo("  nothing net-new; corpus unchanged.")
+        return
+
+    ckpt = data_dir() / f"{cfg.name}_tokens.jsonl"
+    click.echo(f"[{cfg.name}] transliterating net-new (batch, resumable) ...")
+    word_map = transliterate_tokens_batched(
+        net_new,
+        cfg.language,
+        "english",
+        checkpoint_path=ckpt,
+        **_batch_kwargs(ctx),
+    )
+    click.echo(f"  resolved {len(word_map):,}/{len(net_new):,} tokens")
+
+    stats = merge_word_map_into_corpus(
+        corpus_csv=cfg.corpus_csv,
+        word_map=word_map,
+        header=cfg.corpus_header,
+        max_len=cfg.max_len,
+    )
+    click.echo(
+        f"[{cfg.name}] appended {stats['added']:,} new pairs -> {cfg.corpus_csv} "
+        f"(corpus {stats['existing']:,} -> {stats['total']:,}; "
+        f"{stats['skipped_existing']:,} already present, {stats['skipped_len']:,} over-length)"
+    )
+
+
+@cli.command()
+@click.pass_context
+def merge(ctx):
+    """Append an already-resolved token checkpoint into the corpus (no API calls)."""
+    cfg: StateConfig = ctx.obj["cfg"]
+    ckpt = data_dir() / f"{cfg.name}_tokens.jsonl"
+    word_map = _read_checkpoint_map(ckpt)
+    if not word_map:
+        click.echo(f"[{cfg.name}] no resolved tokens at {ckpt}; nothing to merge.")
+        return
+    stats = merge_word_map_into_corpus(
+        corpus_csv=cfg.corpus_csv,
+        word_map=word_map,
+        header=cfg.corpus_header,
+        max_len=cfg.max_len,
+    )
+    click.echo(
+        f"[{cfg.name}] appended {stats['added']:,} new pairs -> {cfg.corpus_csv} "
+        f"(corpus {stats['existing']:,} -> {stats['total']:,}; "
+        f"{stats['skipped_existing']:,} already present, {stats['skipped_len']:,} over-length)"
+    )
 
 
 @cli.command()

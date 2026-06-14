@@ -90,6 +90,18 @@ STATES: dict[str, StateConfig] = {
         corpus_header=("bengali", "english"),
         translit_suffix="_t13n_llm",
     ),
+    # West Bengal rolls are Bengali script too -- same corpus as assam. We only HARVEST
+    # net-new tokens (absent from bengali.csv.gz) and append them, so no parallel parquet
+    # is built; corpus_csv intentionally collides with assam's (shared bengali.csv.gz).
+    # Unlike assam, the polling_station_* columns here carry Bengali script (mined too).
+    "west_bengal": StateConfig(
+        name="west_bengal",
+        language="bengali",
+        native_range=("ঀ", "৿"),
+        input_glob="wb_all.csv.gz",
+        corpus_header=("bengali", "english"),
+        translit_suffix="_t13n_llm",
+    ),
     # Punjab (Gurmukhi, U+0A00-U+0A7F): forward, already built via GPT-4o. Kept so the
     # generalized extractor can be regression-tested against the committed corpus --
     # its parallel parquet uses the `_transliterated` suffix from the original notebook.
