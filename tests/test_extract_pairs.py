@@ -1,7 +1,5 @@
 """Tests for (native, english) pair extraction, incl. the Punjabi regression gate."""
 
-from __future__ import annotations
-
 import csv
 import gzip
 import os

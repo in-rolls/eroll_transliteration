@@ -1,7 +1,5 @@
 """Tests for unique-token extraction and word-map join-back."""
 
-from __future__ import annotations
-
 import re
 import unittest
 

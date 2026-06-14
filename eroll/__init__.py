@@ -6,8 +6,6 @@ batch-mode LLM transliteration. Forward direction only (Indic -> English); rolls
 are already romanized English are out of scope.
 """
 
-from __future__ import annotations
-
 __version__ = "0.1.0"
 
 from .states import STATES, StateConfig

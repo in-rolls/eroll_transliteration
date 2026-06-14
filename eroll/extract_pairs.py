@@ -10,8 +10,6 @@ Field order and ``batch_size`` are significant for exact reproduction of the ori
 Punjabi corpus: they fix the ``Counter`` insertion order (hence modal tie-breaking).
 """
 
-from __future__ import annotations
-
 import csv
 import gzip
 import os

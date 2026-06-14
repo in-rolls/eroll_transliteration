@@ -26,6 +26,8 @@ dependencies = [
     "pyarrow>=15",
     "click>=8.0.0",
     "tqdm>=4.60.0",
+    "requests>=2.30",
+    "duckdb>=1.5.3",
 ]
 
 [dependency-groups]

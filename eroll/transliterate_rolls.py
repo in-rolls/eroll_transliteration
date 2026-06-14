@@ -11,8 +11,6 @@ parallel parquet is written incrementally. The LLM step is batch-mode and resuma
 via a checkpoint, so ``run`` can be re-invoked to resume an in-flight batch.
 """
 
-from __future__ import annotations
-
 import json
 import math
 import random
@@ -45,11 +43,13 @@ def _read_header(cfg: StateConfig) -> list[str]:
             stdout=subprocess.PIPE,
         )
         assert proc.stdout is not None
-        header = pd.read_csv(proc.stdout, nrows=0).columns.tolist()
+        header = pd.read_csv(
+            proc.stdout, nrows=0, encoding="utf-8-sig"
+        ).columns.tolist()
         proc.stdout.close()
         proc.wait()
         return header
-    return pd.read_csv(cfg.input_path, nrows=0).columns.tolist()
+    return pd.read_csv(cfg.input_path, nrows=0, encoding="utf-8-sig").columns.tolist()
 
 
 def available_columns(cfg: StateConfig) -> list[str]:
@@ -67,6 +67,7 @@ def iter_chunks(
         "chunksize": cfg.csv_chunksize,
         "dtype": str,
         "keep_default_na": True,
+        "encoding": "utf-8-sig",  # strip a leading BOM (Daman rolls have one); no-op otherwise
     }
     proc = None
     if cfg.archive:

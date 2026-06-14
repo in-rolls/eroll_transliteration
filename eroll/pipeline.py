@@ -6,8 +6,6 @@ collecting unique native-script tokens from roll columns, and substituting a res
 ``token -> english`` map back into each cell.
 """
 
-from __future__ import annotations
-
 import re
 from collections.abc import Iterable
 

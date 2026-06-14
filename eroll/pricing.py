@@ -8,8 +8,6 @@ NOTE: GPT-4o is legacy as of 2026 (OpenAI's current line is GPT-5.x); fill in wh
 cheap OpenAI batch model you actually use.
 """
 
-from __future__ import annotations
-
 # model -> (input_$_per_mtok, output_$_per_mtok), already batch (50%-off) rates.
 # OpenAI Batch API = 50% off standard. gpt-4o standard $2.50/$10 -> batch $1.25/$5;
 # gpt-4o-mini standard $0.15/$0.60 -> batch $0.075/$0.30. VERIFY before relying on these.

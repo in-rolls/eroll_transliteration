@@ -1,10 +1,8 @@
 """Tests for the per-state configuration registry."""
 
-from __future__ import annotations
-
 import unittest
 
-from eroll.states import NAME_PLACE_COLUMNS, STATES, data_dir
+from eroll.states import GUJ_UT_COLUMNS, NAME_PLACE_COLUMNS, STATES, data_dir
 
 
 class TestStates(unittest.TestCase):
@@ -24,6 +22,21 @@ class TestStates(unittest.TestCase):
         self.assertEqual(wb.corpus_csv, STATES["assam"].corpus_csv)
         self.assertEqual(wb.columns, NAME_PLACE_COLUMNS)
 
+    def test_gujarati_sources_share_one_corpus(self):
+        guj = [STATES[s] for s in ("gujarat", "daman", "dadra")]
+        for cfg in guj:
+            self.assertEqual(cfg.language, "gujarati")
+            self.assertEqual(cfg.corpus_csv.name, "gujarati.csv.gz")
+        # Gujarat state uses the standard schema; the UTs use the name/father/... schema.
+        self.assertEqual(STATES["gujarat"].columns, NAME_PLACE_COLUMNS)
+        self.assertEqual(STATES["daman"].columns, GUJ_UT_COLUMNS)
+        self.assertIn("mother's name", STATES["dadra"].columns)
+
+    def test_gujarati_native_run(self):
+        run = STATES["gujarat"].native_run
+        # Gujarati kept, Latin/other dropped.
+        self.assertEqual(run.findall("પટેલ ધૃતી patel"), ["પટેલ", "ધૃતી"])
+
     def test_columns_default_order(self):
         # Order must match indicate's extract_punjabi SOURCE_FIELDS for byte-exact reproduction.
         self.assertEqual(STATES["assam"].columns, NAME_PLACE_COLUMNS)
@@ -38,6 +51,22 @@ class TestStates(unittest.TestCase):
     def test_punjabi_native_run(self):
         run = STATES["punjab"].native_run
         self.assertEqual(run.findall("ਰਾਜ Singh ਸਿੰਘ"), ["ਰਾਜ", "ਸਿੰਘ"])
+
+    def test_karnataka_config_and_native_run(self):
+        kar = STATES["karnataka"]
+        self.assertEqual(kar.language, "kannada")
+        self.assertEqual(kar.corpus_csv.name, "kannada.csv.gz")
+        # Kannada script kept, Latin dropped.
+        self.assertEqual(kar.native_run.findall("ರಾಮ rama"), ["ರಾಮ"])
+
+    def test_telugu_and_tripura_configs(self):
+        tel = STATES["telugu"]
+        self.assertEqual(tel.corpus_csv.name, "telugu.csv.gz")
+        self.assertEqual(tel.native_run.findall("ఆదిలాబాద్ x"), ["ఆదిలాబాద్"])
+        # Tripura is Bengali script -> appends to the shared bengali.csv.gz.
+        trip = STATES["tripura"]
+        self.assertEqual(trip.language, "bengali")
+        self.assertEqual(trip.corpus_csv, STATES["west_bengal"].corpus_csv)
 
     def test_derived_paths(self):
         import os
