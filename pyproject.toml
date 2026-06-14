@@ -1,0 +1,122 @@
+[build-system]
+requires = ["uv_build>=0.9.15,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "eroll-transliteration"
+version = "0.1.0"
+description = "LLM-assisted (indicate-backed) transliteration of Indian electoral rolls"
+readme = "README.md"
+authors = [
+    {name = "Gaurav Sood", email = "gsood07@gmail.com"},
+    {name = "Rajashekar Chintalapati", email = "rajshekar.ch@gmail.com"},
+]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+keywords = ["transliterate", "indic", "electoral-rolls", "assamese", "punjabi"]
+requires-python = ">=3.13"
+dependencies = [
+    "indicate>=0.6.0",
+    "pandas>=2.0",
+    "pyarrow>=15",
+    "click>=8.0.0",
+    "tqdm>=4.60.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.7.0",
+    "mypy>=1.0",
+    "black>=24.0",
+    "isort>=5.0",
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+eroll-transliterate = "eroll.transliterate_rolls:cli"
+
+[project.urls]
+Homepage = "https://github.com/in-rolls/eroll_transliteration"
+Repository = "https://github.com/in-rolls/eroll_transliteration"
+
+# Use the local indicate checkout for development. Drop this once indicate is on PyPI.
+[tool.uv.sources]
+indicate = { path = "../indicate", editable = true }
+
+[tool.uv.build-backend]
+module-root = ""
+source-exclude = [
+    "/.github",
+    "/.venv",
+    "/tests",
+    "/data",
+    "/.gitignore",
+]
+
+# Ruff configuration
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = [".git", "__pycache__", "build", "dist", ".venv", "data"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["eroll"]
+
+[tool.black]
+line-length = 88
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known-first-party = ["eroll"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = ["-ra", "--strict-markers"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_configs = true
+check_untyped_defs = true
+warn_redundant_casts = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["pandas.*", "pyarrow.*", "litellm.*", "tqdm.*", "indicate.*"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["eroll"]
+branch = true

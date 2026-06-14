@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Build/runtime artifacts (any location)
+*.7z
+*.parquet
+*_tokens.jsonl
+*.batchstate.json
+
+# data/: track README + the per-language word-pair corpora (small .csv.gz, <100MB).
+# Large raw rolls (>100MB) and derived files stay out of git -> host on Dataverse
+# (GitHub hard-rejects files >100MB).
+/data/*
+!/data/README.md
+!/data/*.csv.gz
+/data/*_all_clean*.csv.gz
+/data/*_train_v2.csv.gz
