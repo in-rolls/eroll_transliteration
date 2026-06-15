@@ -59,6 +59,15 @@ class TestStates(unittest.TestCase):
         # Kannada script kept, Latin dropped.
         self.assertEqual(kar.native_run.findall("ರಾಮ rama"), ["ರಾಮ"])
 
+    def test_marathi_tamil_odia_configs(self):
+        self.assertEqual(STATES["maharashtra"].corpus_csv.name, "marathi.csv.gz")
+        self.assertEqual(STATES["tamil_nadu"].corpus_csv.name, "tamil.csv.gz")
+        self.assertEqual(STATES["odisha"].corpus_csv.name, "odia.csv.gz")
+        # Each keeps its own script, drops Latin.
+        self.assertEqual(STATES["maharashtra"].native_run.findall("राम ram"), ["राम"])
+        self.assertEqual(STATES["tamil_nadu"].native_run.findall("ராம் ram"), ["ராம்"])
+        self.assertEqual(STATES["odisha"].native_run.findall("ରାମ ram"), ["ରାମ"])
+
     def test_telugu_and_tripura_configs(self):
         tel = STATES["telugu"]
         self.assertEqual(tel.corpus_csv.name, "telugu.csv.gz")

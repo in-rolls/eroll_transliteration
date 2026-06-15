@@ -186,6 +186,34 @@ STATES: dict[str, StateConfig] = {
         corpus_header=("bengali", "english"),
         translit_suffix="_t13n_llm",
     ),
+    # Marathi (Devanagari, U+0900-U+097F -- same script as Hindi, distinct name vocab):
+    # LLM harvest -> marathi.csv.gz. Input is the concatenated .partaa/.partab split.
+    "maharashtra": StateConfig(
+        name="maharashtra",
+        language="marathi",
+        native_range=("ऀ", "ॿ"),
+        input_glob="maharashtra_all_clean+t13n.csv.gz",
+        corpus_header=("marathi", "english"),
+        translit_suffix="_t13n_llm",
+    ),
+    # Tamil (U+0B80-U+0BFF): LLM harvest -> tamil.csv.gz.
+    "tamil_nadu": StateConfig(
+        name="tamil_nadu",
+        language="tamil",
+        native_range=("஀", "௿"),
+        input_glob="tn_all.csv.gz",
+        corpus_header=("tamil", "english"),
+        translit_suffix="_t13n_llm",
+    ),
+    # Odia (U+0B00-U+0B7F): LLM harvest -> odia.csv.gz.
+    "odisha": StateConfig(
+        name="odisha",
+        language="odia",
+        native_range=("଀", "୿"),
+        input_glob="odi_all_clean+t13n.csv.gz",
+        corpus_header=("odia", "english"),
+        translit_suffix="_t13n_llm",
+    ),
     # Punjab (Gurmukhi, U+0A00-U+0A7F): forward, already built via GPT-4o. Kept so the
     # generalized extractor can be regression-tested against the committed corpus --
     # its parallel parquet uses the `_transliterated` suffix from the original notebook.
