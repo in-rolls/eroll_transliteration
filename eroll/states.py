@@ -196,6 +196,32 @@ STATES: dict[str, StateConfig] = {
         corpus_header=("marathi", "english"),
         translit_suffix="_t13n_llm",
     ),
+    # Hindi-belt (Devanagari): all share one hindi.csv.gz corpus (Gemini, token-dedup --
+    # words recur across states so net-new harvest avoids re-transliterating). indicate's
+    # LSTM is too slow at this scale and libindic _t13n is too vowel-heavy. Split rolls
+    # (bihar/uttar_pradesh) are concatenated to the input_glob name before harvest.
+    # Sikkim is Nepali but Devanagari, so it rides the same hindi corpus.
+    **{
+        s: StateConfig(
+            name=s,
+            language="hindi",
+            native_range=("ऀ", "ॿ"),
+            input_glob=roll,
+            corpus_header=("hindi", "english"),
+            translit_suffix="_t13n_llm",
+        )
+        for s, roll in {
+            "madhya_pradesh": "mp_all_clean+t13n.csv.gz",
+            "rajasthan": "rajasthan_all_clean+t13n.csv.gz",
+            "jharkhand": "jha_all_clean+t13n.csv.gz",
+            "haryana": "har_all_clean+t13n.csv.gz",
+            "chandigarh": "chandigarh_all_clean+t13n.csv.gz",
+            "uttarakhand": "utt_all_clean+t13n.csv.gz",
+            "bihar": "bihar_all_clean+t13n.csv.gz",
+            "uttar_pradesh": "up_all_clean+t13n.csv.gz",
+            "sikkim": "sikkim_all_clean.csv.gz",
+        }.items()
+    },
     # Tamil (U+0B80-U+0BFF): LLM harvest -> tamil.csv.gz.
     "tamil_nadu": StateConfig(
         name="tamil_nadu",
