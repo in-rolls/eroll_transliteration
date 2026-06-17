@@ -219,6 +219,7 @@ STATES: dict[str, StateConfig] = {
             "uttarakhand": "utt_all_clean+t13n.csv.gz",
             "bihar": "bihar_all_clean+t13n.csv.gz",
             "uttar_pradesh": "up_all_clean+t13n.csv.gz",
+            "himachal": "himachal_all_clean+t13n.csv.gz",
             "sikkim": "sikkim_all_clean.csv.gz",
         }.items()
     },
